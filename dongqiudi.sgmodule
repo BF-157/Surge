@@ -1,0 +1,14 @@
+#!name=懂球帝 去开屏广告
+#!desc=用脚本即时返回「无广告」响应（plat/v3 → []，plat/v4 → 空 sdk），替代直接 REJECT，消除开屏等超时导致的白屏。脚本托管在本仓库，导入模块即可，无需本地放文件。
+#!category=广告
+#!system=ios
+
+[Script]
+dqd-plat-mock = type=http-request,pattern=^https?://ap\.dongdianqiu\.com/plat/,script-path=https://raw.githubusercontent.com/BF-157/Surge/main/scripts/dqd-plat.js
+
+[MITM]
+hostname = %APPEND% ap.dongdianqiu.com
+
+[Rule]
+# 兜底：脚本未生效（MITM 失效/脚本拉取失败）时仍然拦住广告
+DOMAIN-SUFFIX,ap.dongdianqiu.com,REJECT-TINYGIF
