@@ -5,7 +5,7 @@
 #!system=ios
 
 [Script]
-telegram-jump = type=http-request,pattern=^https?://(t|telegram)\.me(?:\/|$),script-path=https://cdn.jsdelivr.net/gh/BF-157/Surge@main/scripts/telegram-jump.js,argument="{{{client}}}"
+telegram-jump = type=http-request,pattern=^https?://(t|telegram)\.me(?:\/|$),script-path=https://raw.githubusercontent.com/BF-157/Surge/main/scripts/telegram-jump.js,argument="{{{client}}}"
 
 [MITM]
 hostname = %APPEND% t.me, telegram.me
