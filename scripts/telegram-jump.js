@@ -31,10 +31,32 @@ function resolveScheme(arg) {
   return /^[a-z][a-z0-9+.-]*$/.test(cleaned) ? cleaned : 'tg';
 }
 
+function argValue() {
+  const raw = String($argument == null ? '' : $argument).trim();
+  // 模块参数没被替换（拿到 {{{client}}} 之类）时视为未设置
+  if (!raw || raw.indexOf('{{') >= 0) return '';
+  return raw;
+}
+
+function codeOfScheme(scheme) {
+  const hit = CLIENTS.filter((x) => x.scheme === scheme)[0];
+  return hit ? hit.code : null;
+}
+
 function currentCode() {
+  const a = argValue();
+  if (a) {
+    const code = (byCode(a) || {}).code || codeOfScheme(resolveScheme(a));
+    if (code) return code;
+  }
   const stored = String($persistentStore.read(KEY) || '').trim();
-  const hit = byCode(stored) || byCode($argument);
+  const hit = byCode(stored);
   return hit ? hit.code : 'TG';
+}
+
+function currentScheme() {
+  const a = argValue();
+  return resolveScheme(a || currentCode());
 }
 
 function buildTarget(scheme, rest, query, hash) {
@@ -87,9 +109,12 @@ function selectPage(cur) {
     + (x.code === c.code ? '<span class="cur">当前</span>' : `<span class="c">${x.scheme}://</span>`)
     + '</a>'
   ).join('');
+  const note = argValue()
+    ? '当前由模块参数 client 指定；下面点选只在参数留空时生效。'
+    : '点一项切换，之后 t.me 链接都按它跳。';
   return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">`
     + `<title>Telegram 跳转</title>${STYLE}`
-    + `<h1>Telegram 跳转</h1><p class="sub">当前：${c.name}（${c.scheme}://）。点一项切换，之后 t.me 链接都按它跳。</p>`
+    + `<h1>Telegram 跳转</h1><p class="sub">当前：${c.name}（${c.scheme}://）。${note}</p>`
     + items
     + `<p class="tip">也可以直接访问 t.me/__tgclient__/sg 这类链接切换；选择保存在 Surge 本地，重启不丢。</p>`;
 }
@@ -136,7 +161,7 @@ if (!m) {
       }
     }
   } else {
-    const target = buildTarget(resolveScheme(currentCode()), rest, query, hash);
+    const target = buildTarget(currentScheme(), rest, query, hash);
     if (target) {
       $done({ response: { status: 302, headers: { Location: target } } });
     } else {
