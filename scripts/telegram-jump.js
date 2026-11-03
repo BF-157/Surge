@@ -127,6 +127,23 @@ function donePage(code) {
     + `<a class="item on" href="/__tgclient__"><span class="n">返回选择页</span></a>`;
 }
 
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function openPage(target, code) {
+  const c = byCode(code) || CLIENTS[0];
+  const safe = esc(target);
+  const js = JSON.stringify(target).replace(/</g, '\\u003c');
+  return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">`
+    + `<title>打开 ${c.name}</title>${STYLE}`
+    + `<h1>打开 ${c.name}</h1>`
+    + `<p class="sub">正在唤起客户端… 如果没反应，点下面的按钮。</p>`
+    + `<a class="item on" href="${safe}"><span class="n">在 ${c.name} 中打开</span><span class="c">${c.scheme}://</span></a>`
+    + `<p class="tip">目标地址：<code>${safe}</code></p>`
+    + `<script>setTimeout(function(){ window.location.href = ${js}; }, 80);</script>`;
+}
+
 const url = $request.url || '';
 const m = url.match(/^https?:\/\/(?:t|telegram)\.me(?:\/|$)(.*)$/i);
 
@@ -163,7 +180,8 @@ if (!m) {
   } else {
     const target = buildTarget(currentScheme(), rest, query, hash);
     if (target) {
-      $done({ response: { status: 302, headers: { Location: target } } });
+      $done({ response: { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' },
+        body: openPage(target, currentCode()) } });
     } else {
       $done({});
     }
