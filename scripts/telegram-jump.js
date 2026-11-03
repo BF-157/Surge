@@ -180,8 +180,7 @@ if (!m) {
   } else {
     const target = buildTarget(currentScheme(), rest, query, hash);
     if (target) {
-      $done({ response: { status: 200, headers: { 'Content-Type': 'text/html; charset=utf-8' },
-        body: openPage(target, currentCode()) } });
+      $done({ response: { status: 302, headers: { Location: target } } });
     } else {
       $done({});
     }
