@@ -3,7 +3,7 @@
 <p align="left">
   <img alt="Surge" src="https://img.shields.io/badge/Surge-iOS%20%7C%20macOS-ff6b35?style=flat-square">
   <img alt="License" src="https://img.shields.io/badge/license-MIT-blue?style=flat-square">
-  <img alt="Modules" src="https://img.shields.io/badge/modules-1-brightgreen?style=flat-square">
+  <img alt="Modules" src="https://img.shields.io/badge/modules-2-brightgreen?style=flat-square">
 </p>
 
 个人自用的 Surge 模块合集。所有模块都可以直接通过 raw 链接导入，脚本同样托管在本仓库，**不需要在本地放任何文件**。
@@ -13,8 +13,10 @@
 | 模块 | 作用 | 导入 |
 | --- | --- | --- |
 | [懂球帝 · 去开屏广告](dongqiudi.sgmodule) | 脚本即时返回空广告数据，消除开屏广告与白屏等待 | [一键安装][dqd-raw] |
+| [Telegram 多客户端跳转](telegram-jump.sgmodule) | 点 `t.me` 链接按选定的客户端（TG/NA/SG/…）跳转 | [一键安装][tg-raw] |
 
 [dqd-raw]: https://raw.githubusercontent.com/BF-157/Surge/main/dongqiudi.sgmodule
+[tg-raw]: https://raw.githubusercontent.com/BF-157/Surge/main/telegram-jump.sgmodule
 
 ## 安装
 
@@ -48,13 +50,39 @@
 - `scripts/dqd-plat.js`：广告位接口 mock 脚本，模块通过 raw URL 引用
 - MITM 已开启，且 `ap.dongdianqiu.com` 的证书已信任
 
+## Telegram 多客户端跳转
+
+**作用**：点开 `t.me` / `telegram.me` 链接时，跳到你在模块参数里选定的客户端，而不是官方 App 或网页。
+
+**参数**：`client`，可选 `TG`（Telegram）、`NA`（Nagram）、`SG`（Swiftgram）、`TU`（Turrit）、`IM`（iMe）、`NG`（Nicegram）、`LI`（Lingogram）、`RE`（Regram）；也可以直接填真实 scheme（如 `swiftgram`）。
+
+**为什么需要脚本**：纯 `[URL Rewrite]` 只能把参数原样拼进目标地址，`SG://...` 并不是有效 scheme；而且 t.me 的链接形态不止一种。脚本把代号映射成真实 scheme，并分别处理：
+
+| 链接 | 跳转结果（以 TG 为例） |
+| --- | --- |
+| `t.me/durov` | `tg://resolve?domain=durov` |
+| `t.me/durov/123` | `tg://resolve?domain=durov&post=123` |
+| `t.me/+hash`、`t.me/joinchat/hash` | `tg://join?invite=hash` |
+| `t.me/s/durov`（网页预览） | `tg://resolve?domain=durov` |
+| `t.me/share/url?...` | `tg://msg_url?...` |
+| `t.me/proxy?...`、`t.me/addstickers/...` | `tg://proxy?...`、`tg://addstickers?set=...` |
+
+脚本直接以 `302 + Location: <深链>` 返回，Safari 收到后唤起 App。
+
+**依赖**
+
+- `scripts/telegram-jump.js`：跳转脚本，模块通过 raw URL 引用
+- MITM 已开启（模块会 `%APPEND%` `t.me, telegram.me`）
+
 ## 仓库结构
 
 ```
 .
 ├── dongqiudi.sgmodule    # 懂球帝去开屏广告模块
+├── telegram-jump.sgmodule # Telegram 多客户端跳转模块
 ├── scripts/
-│   └── dqd-plat.js       # 广告位接口 mock 脚本
+│   ├── dqd-plat.js       # 广告位接口 mock 脚本
+│   └── telegram-jump.js  # t.me 深链跳转脚本
 ├── LICENSE
 └── README.md
 ```
