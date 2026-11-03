@@ -1,11 +1,9 @@
-#!name=Telegram 多客户端跳转
-#!desc=点 t.me / telegram.me 链接时跳到你所选的 Telegram 客户端。脚本负责把代号映射成真实 scheme，并处理频道帖子、+邀请、t.me/s、share、addstickers、proxy 等链接形态。
-#!arguments=client:TG
-#!arguments-desc=客户端代号：TG=Telegram，NA=Nagram，SG=Swiftgram，TU=Turrit，IM=iMe，NG=Nicegram，LI=Lingogram，RE=Regram。也可以直接填 scheme（如 swiftgram）。
+﻿#!name=Telegram 跳转 · Telegram
+#!desc=点 t.me / telegram.me 链接时跳转到 Telegram（TG）。脚本负责代号到 scheme 的映射，并处理频道、帖子、+邀请、t.me/s、t.me/c 等链接形态。
 #!system=ios
 
 [Script]
-telegram-jump = type=http-request,pattern=^https?://(t|telegram)\.me(?:\/|$),script-path=https://raw.githubusercontent.com/BF-157/Surge/main/scripts/telegram-jump.js,argument={{client}}
+telegram-jump = type=http-request,pattern=^https?://(t|telegram)\.me(?:\/|$),script-path=https://raw.githubusercontent.com/BF-157/Surge/main/scripts/telegram-jump.js,argument=TG
 
 [MITM]
 hostname = %APPEND% t.me, telegram.me

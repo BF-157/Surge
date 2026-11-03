@@ -14,11 +14,14 @@ const SCHEMES = {
 };
 
 function resolveScheme(arg) {
-  const raw = String(arg == null ? 'TG' : arg).trim();
+  let raw = String(arg == null ? '' : arg).trim();
+  // 模块参数没被替换（例如 iOS 不支持参数表，拿到的是 {{client}}）时回退到官方 TG
+  if (!raw || raw.indexOf('{{') >= 0) raw = 'TG';
   const key = raw.toUpperCase();
   if (SCHEMES[key]) return SCHEMES[key];
   // 允许直接传 scheme，兼容 "tg://" / "tg" 两种写法
-  return raw.toLowerCase().replace(/^([a-z0-9+.-]+):\/\/$/, '$1').replace(/[:\/]+$/, '');
+  const cleaned = raw.toLowerCase().replace(/^([a-z0-9+.-]+):\/\/$/, '$1').replace(/[:\/]+$/, '');
+  return /^[a-z][a-z0-9+.-]*$/.test(cleaned) ? cleaned : 'tg';
 }
 
 function buildTarget(scheme, rest, query, hash) {

@@ -13,10 +13,11 @@
 | 模块 | 作用 | 导入 |
 | --- | --- | --- |
 | [懂球帝 · 去开屏广告](dongqiudi.sgmodule) | 脚本即时返回空广告数据，消除开屏广告与白屏等待 | [一键安装][dqd-raw] |
-| [Telegram 多客户端跳转](telegram-jump.sgmodule) | 点 `t.me` 链接按选定的客户端（TG/NA/SG/…）跳转 | [一键安装][tg-raw] |
+| [Telegram 跳转](telegram-jump.sgmodule) | 点 `t.me` 链接跳到所选客户端，每个客户端一个模块 | [Telegram][tg-raw] · [Swiftgram][tg-sg-raw] · [更多…](#telegram-跳转) |
 
 [dqd-raw]: https://raw.githubusercontent.com/BF-157/Surge/main/dongqiudi.sgmodule
 [tg-raw]: https://raw.githubusercontent.com/BF-157/Surge/main/telegram-jump.sgmodule
+[tg-sg-raw]: https://raw.githubusercontent.com/BF-157/Surge/main/telegram-jump-sg.sgmodule
 
 ## 安装
 
@@ -50,11 +51,24 @@
 - `scripts/dqd-plat.js`：广告位接口 mock 脚本，模块通过 raw URL 引用
 - MITM 已开启，且 `ap.dongdianqiu.com` 的证书已信任
 
-## Telegram 多客户端跳转
+## Telegram 跳转
 
-**作用**：点开 `t.me` / `telegram.me` 链接时，跳到你在模块参数里选定的客户端，而不是官方 App 或网页。
+**作用**：点开 `t.me` / `telegram.me` 链接时，跳到你所选的客户端，而不是官方 App 或网页。
 
-**参数**：`client`，可选 `TG`（Telegram）、`NA`（Nagram）、`SG`（Swiftgram）、`TU`（Turrit）、`IM`（iMe）、`NG`（Nicegram）、`LI`（Lingogram）、`RE`（Regram）；也可以直接填真实 scheme（如 `swiftgram`）。
+**选客户端**：每个客户端一个模块，导入对应那个即可（同一时间只开一个）。
+
+| 客户端 | 代号 | 导入 | scheme |
+| --- | --- | --- | --- |
+| Telegram | TG | [telegram-jump.sgmodule](https://raw.githubusercontent.com/BF-157/Surge/main/telegram-jump.sgmodule) | `tg://` |
+| Nagram | NA | [telegram-jump-na.sgmodule](https://raw.githubusercontent.com/BF-157/Surge/main/telegram-jump-na.sgmodule) | `nagram://` |
+| Swiftgram | SG | [telegram-jump-sg.sgmodule](https://raw.githubusercontent.com/BF-157/Surge/main/telegram-jump-sg.sgmodule) | `swiftgram://` |
+| Turrit | TU | [telegram-jump-tu.sgmodule](https://raw.githubusercontent.com/BF-157/Surge/main/telegram-jump-tu.sgmodule) | `turrit://` |
+| iMe | IM | [telegram-jump-im.sgmodule](https://raw.githubusercontent.com/BF-157/Surge/main/telegram-jump-im.sgmodule) | `ime://` |
+| Nicegram | NG | [telegram-jump-ng.sgmodule](https://raw.githubusercontent.com/BF-157/Surge/main/telegram-jump-ng.sgmodule) | `nicegram://` |
+| Lingogram | LI | [telegram-jump-li.sgmodule](https://raw.githubusercontent.com/BF-157/Surge/main/telegram-jump-li.sgmodule) | `lingogram://` |
+| Regram | RE | [telegram-jump-re.sgmodule](https://raw.githubusercontent.com/BF-157/Surge/main/telegram-jump-re.sgmodule) | `regram://` |
+
+> **为什么不做成一个带参数的模块**：Surge 的模块参数表（`#!arguments`）只在 Mac 上支持，iOS 上 `{{client}}` 不会被替换，会原样拼进跳转地址变成无效 scheme，浏览器再把它当相对路径拼回 `t.me`，就会无限递归。所以 iOS 直接按客户端拆成多个模块，参数写死，最稳。
 
 **为什么需要脚本**：纯 `[URL Rewrite]` 只能把参数原样拼进目标地址，`SG://...` 并不是有效 scheme；而且 t.me 的链接形态不止一种。脚本把代号映射成真实 scheme，并分别处理：
 
@@ -80,7 +94,8 @@
 ```
 .
 ├── dongqiudi.sgmodule    # 懂球帝去开屏广告模块
-├── telegram-jump.sgmodule # Telegram 多客户端跳转模块
+├── telegram-jump.sgmodule    # Telegram 跳转（官方 TG）
+├── telegram-jump-{na,sg,tu,im,ng,li,re}.sgmodule   # 其它客户端
 ├── scripts/
 │   ├── dqd-plat.js       # 广告位接口 mock 脚本
 │   └── telegram-jump.js  # t.me 深链跳转脚本

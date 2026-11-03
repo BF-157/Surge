@@ -1,0 +1,9 @@
+﻿#!name=Telegram 跳转 · Nagram
+#!desc=点 t.me / telegram.me 链接时跳转到 Nagram（NA）。脚本负责代号到 scheme 的映射，并处理频道、帖子、+邀请、t.me/s、t.me/c 等链接形态。
+#!system=ios
+
+[Script]
+telegram-jump = type=http-request,pattern=^https?://(t|telegram)\.me(?:\/|$),script-path=https://raw.githubusercontent.com/BF-157/Surge/main/scripts/telegram-jump.js,argument=NA
+
+[MITM]
+hostname = %APPEND% t.me, telegram.me
