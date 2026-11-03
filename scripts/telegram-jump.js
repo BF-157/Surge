@@ -21,24 +21,7 @@ function resolveScheme(arg) {
   return raw.toLowerCase().replace(/^([a-z0-9+.-]+):\/\/$/, '$1').replace(/[:\/]+$/, '');
 }
 
-const url = $request.url || '';
-const m = url.match(/^https?:\/\/(?:t|telegram)\.me(?:\/|$)(.*)$/i);
-
-if (!m) {
-  $done({});
-} else {
-  const scheme = resolveScheme($argument);
-  let rest = m[1] || '';
-
-  // 拆出 fragment 和 query，最后再拼回去
-  let hash = '';
-  const hi = rest.indexOf('#');
-  if (hi >= 0) { hash = rest.slice(hi); rest = rest.slice(0, hi); }
-  let query = '';
-  const qi = rest.indexOf('?');
-  if (qi >= 0) { query = rest.slice(qi + 1); rest = rest.slice(0, qi); }
-  rest = rest.replace(/^\/+/, '');
-
+function buildTarget(scheme, rest, query, hash) {
   let target = '';
   if (/^\+/.test(rest)) {
     // 邀请链接 t.me/+hash
@@ -56,17 +39,45 @@ if (!m) {
   } else if (/^proxy/i.test(rest)) {
     target = `${scheme}://proxy${query ? '?' + query : ''}`;
     query = '';
+  } else if (/^c\//i.test(rest)) {
+    // 私有群/频道的历史消息：t.me/c/<channel>/<post>
+    const p = rest.slice(2).split('/');
+    target = `${scheme}://privatepost?channel=${p[0]}`;
+    if (p[1]) target += `&post=${p[1]}`;
   } else if (rest) {
     const parts = rest.split('/');
     target = `${scheme}://resolve?domain=${parts[0]}`;
     if (parts[1]) target += `&post=${parts[1]}`;
   } else {
-    // t.me 根路径：没有可跳转的目标，原样放行
-    $done({});
+    // t.me 根路径：没有可跳转的目标
+    return null;
   }
-
   if (query) target += (target.indexOf('?') >= 0 ? '&' : '?') + query;
   if (hash) target += hash;
+  return target;
+}
 
-  $done({ response: { status: 302, headers: { Location: target } } });
+const url = $request.url || '';
+const m = url.match(/^https?:\/\/(?:t|telegram)\.me(?:\/|$)(.*)$/i);
+
+if (!m) {
+  $done({});
+} else {
+  let rest = m[1] || '';
+
+  // 拆出 fragment 和 query，最后再拼回去
+  let hash = '';
+  const hi = rest.indexOf('#');
+  if (hi >= 0) { hash = rest.slice(hi); rest = rest.slice(0, hi); }
+  let query = '';
+  const qi = rest.indexOf('?');
+  if (qi >= 0) { query = rest.slice(qi + 1); rest = rest.slice(0, qi); }
+  rest = rest.replace(/^\/+/, '');
+
+  const target = buildTarget(resolveScheme($argument), rest, query, hash);
+  if (target) {
+    $done({ response: { status: 302, headers: { Location: target } } });
+  } else {
+    $done({});
+  }
 }

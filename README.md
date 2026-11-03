@@ -64,6 +64,7 @@
 | `t.me/durov/123` | `tg://resolve?domain=durov&post=123` |
 | `t.me/+hash`、`t.me/joinchat/hash` | `tg://join?invite=hash` |
 | `t.me/s/durov`（网页预览） | `tg://resolve?domain=durov` |
+| `t.me/c/<channel>/<post>`（私有群消息） | `tg://privatepost?channel=...&post=...` |
 | `t.me/share/url?...` | `tg://msg_url?...` |
 | `t.me/proxy?...`、`t.me/addstickers/...` | `tg://proxy?...`、`tg://addstickers?set=...` |
 
