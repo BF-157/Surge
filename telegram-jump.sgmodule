@@ -1,5 +1,5 @@
-﻿#!name=Telegram 跳转 · Telegram
-#!desc=点 t.me / telegram.me 链接时跳转到 Telegram（TG）。脚本负责代号到 scheme 的映射，并处理频道、帖子、+邀请、t.me/s、t.me/c 等链接形态。
+#!name=Telegram 跳转
+#!desc=点 t.me / telegram.me 链接时跳转到你选的 Telegram 客户端。默认官方 Telegram；访问 t.me/__tgclient__/sg 这类链接即可切换（tg/na/sg/tu/im/ng/li/re），偏好保存在 Surge 本地。一个模块通吃，不依赖模块参数表。
 #!system=ios
 
 [Script]
