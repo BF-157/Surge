@@ -13,10 +13,10 @@
 | 模块 | 作用 | 导入 |
 | --- | --- | --- |
 | [懂球帝 · 去开屏广告](dongqiudi.sgmodule) | 脚本即时返回空广告数据，消除开屏广告与白屏等待 | [一键安装][dqd-raw] |
-| [Telegram 跳转](telegram-jump.sgmodule) | 点 `t.me` 链接跳到所选的 Telegram 客户端（一个模块，链接里切换） | [一键安装][tg-raw] |
+| [Telegram 多客户端跳转](telegram-jump-rewrite.sgmodule) | 点 `t.me` 链接 302 到你选的 Telegram 客户端 | [一键安装][tg-raw] |
 
 [dqd-raw]: https://raw.githubusercontent.com/BF-157/Surge/main/dongqiudi.sgmodule
-[tg-raw]: https://raw.githubusercontent.com/BF-157/Surge/main/telegram-jump.sgmodule
+[tg-raw]: https://raw.githubusercontent.com/BF-157/Surge/main/telegram-jump-rewrite.sgmodule
 
 ## 安装
 
@@ -50,60 +50,39 @@
 - `scripts/dqd-plat.js`：广告位接口 mock 脚本，模块通过 raw URL 引用
 - MITM 已开启，且 `ap.dongdianqiu.com` 的证书已信任
 
-## Telegram 跳转
+## Telegram 多客户端跳转
 
-**作用**：点开 `t.me` / `telegram.me` 链接时，跳到你所选的客户端，而不是官方 App 或网页。
+**作用**：点 `t.me` / `telegram.me` 链接时，302 到你在模块参数里指定的客户端。
 
-**选客户端（推荐）**：导入后到 模块 → 该模块 →「参数」里改 `client`，可选 `TG`/`NA`/`SG`/`TU`/`IM`/`NG`/`LI`/`RE`，也可以直接填真实 scheme（如 `swiftgram`），改完立即生效。
+**参数**：`client`，填**客户端的 scheme**（不是代号）：
 
-> 注意占位符是**三花括号** `{{{client}}}`，写成两花括号 `{{client}}` 不会被替换（会原样拼进跳转地址，浏览器当相对路径拼回 t.me，形成死循环）。
-
-**备用切换方式**：参数留空时，打开 **`https://t.me/__tgclient__`** 会出现选择页，点哪个客户端就切到哪个（偏好存在 Surge 本地）。也可以直接访问下面的链接切。
-
-| 打开这个链接 | 之后 t.me 跳到 |
+| 客户端 | 参数填 |
 | --- | --- |
-| `https://t.me/__tgclient__/tg` | Telegram |
-| `https://t.me/__tgclient__/na` | Nagram |
-| `https://t.me/__tgclient__/sg` | Swiftgram |
-| `https://t.me/__tgclient__/tu` | Turrit |
-| `https://t.me/__tgclient__/im` | iMe |
-| `https://t.me/__tgclient__/ng` | Nicegram |
-| `https://t.me/__tgclient__/li` | Lingogram |
-| `https://t.me/__tgclient__/re` | Regram |
-| `https://t.me/__tgclient__` | 查看当前客户端 |
+| Telegram | `tg` |
+| Swiftgram | `swiftgram` |
+| Nagram | `nagram` |
+| Turrit | `turrit` |
+| iMe | `ime` |
+| Nicegram | `nicegram` |
+| Lingogram | `lingogram` |
+| Regram | `regram` |
 
-偏好写在 `$persistentStore` 的 `tg_jump_client` 键里。
+> 两个坑：
+> 1. 占位符必须写**三花括号** `{{{client}}}`，两花括号 `{{client}}` 不会被替换，会原样拼进 `Location`，浏览器当相对路径拼回 `t.me` 形成死循环。
+> 2. `URL Rewrite` 只做字符串替换，没有「代号 → scheme」的映射能力，所以参数填 `SG` 会得到 `SG://`，没有 App 响应。
 
-> **为什么不走模块参数**：`#!arguments` 参数表只有 Mac 支持，iOS 上 `{{client}}` 不会被替换，原样拼进跳转地址就是非法 scheme；浏览器又会把它当相对路径拼回 `t.me`，于是无限递归（这次踩的就是这个坑）。所以改成脚本读本地偏好，一个模块搞定。
+**支持范围**：频道 `t.me/name`、帖子 `t.me/name/123`。邀请链接 `t.me/+hash`、`t.me/s/...`、`share`、私有群 `t.me/c/...` 不支持（要这些得上脚本）。
 
-**为什么需要脚本**：纯 `[URL Rewrite]` 只能把参数原样拼进目标地址，`SG://...` 并不是有效 scheme；而且 t.me 的链接形态不止一种。脚本把代号映射成真实 scheme，并分别处理：
-
-| 链接 | 跳转结果（以 TG 为例） |
-| --- | --- |
-| `t.me/durov` | `tg://resolve?domain=durov` |
-| `t.me/durov/123` | `tg://resolve?domain=durov&post=123` |
-| `t.me/+hash`、`t.me/joinchat/hash` | `tg://join?invite=hash` |
-| `t.me/s/durov`（网页预览） | `tg://resolve?domain=durov` |
-| `t.me/c/<channel>/<post>`（私有群消息） | `tg://privatepost?channel=...&post=...` |
-| `t.me/share/url?...` | `tg://msg_url?...` |
-| `t.me/proxy?...`、`t.me/addstickers/...` | `tg://proxy?...`、`tg://addstickers?set=...` |
-
-脚本直接以 `302 + Location: <深链>` 返回，Safari 收到后唤起 App。
-
-**依赖**
-
-- `scripts/telegram-jump.js`：跳转脚本，模块通过 raw URL 引用
-- MITM 已开启（模块会 `%APPEND%` `t.me, telegram.me`）
+**依赖**：MITM 已开启（模块会 `%APPEND%` `t.me, telegram.me`）。
 
 ## 仓库结构
 
 ```
 .
-├── dongqiudi.sgmodule    # 懂球帝去开屏广告模块
-├── telegram-jump.sgmodule    # Telegram 跳转（单模块，可切换客户端）
+├── dongqiudi.sgmodule                # 懂球帝去开屏广告
+├── telegram-jump-rewrite.sgmodule    # Telegram 多客户端跳转
 ├── scripts/
-│   ├── dqd-plat.js       # 广告位接口 mock 脚本
-│   └── telegram-jump.js  # t.me 深链跳转脚本
+│   └── dqd-plat.js                   # 广告位接口 mock 脚本
 ├── LICENSE
 └── README.md
 ```
