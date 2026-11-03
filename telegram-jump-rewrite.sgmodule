@@ -1,0 +1,14 @@
+#!name=Telegram 跳转（纯规则 · 参数）
+#!desc=不依赖脚本：在模块参数 client 里填目标客户端的 scheme，t.me 链接会 302 到对应 App。只支持「频道」和「频道/帖子」两种链接；邀请链接、t.me/s、share 等用脚本版。
+#!arguments=client:swiftgram
+#!arguments-desc=这里要填 scheme，不是代号：tg=Telegram，swiftgram=Swiftgram，nagram=Nagram，turrit=Turrit，ime=iMe，nicegram=Nicegram，lingogram=Lingogram，regram=Regram
+#!system=ios
+
+[URL Rewrite]
+# 频道帖子：https://t.me/name/123 -> <client>://resolve?domain=name&post=123
+^https?://(?:t|telegram)\.me/([A-Za-z0-9_]{4,})/([0-9]+)/?$ {{{client}}}://resolve?domain=$1&post=$2 302
+# 频道：https://t.me/name -> <client>://resolve?domain=name
+^https?://(?:t|telegram)\.me/([A-Za-z0-9_]{4,})/?$ {{{client}}}://resolve?domain=$1 302
+
+[MITM]
+hostname = %APPEND% t.me, telegram.me
