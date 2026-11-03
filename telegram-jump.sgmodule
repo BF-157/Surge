@@ -1,11 +1,9 @@
-#!name=Telegram 多客户端跳转
-#!desc=在模块参数里选客户端：点 t.me / telegram.me 链接时，跳到你选的 Telegram 客户端。参数留空时用 t.me/__tgclient__ 选择页保存的偏好，默认 TG。
-#!arguments=client:SG
-#!arguments-desc=客户端代号：TG=Telegram，NA=Nagram，SG=Swiftgram，TU=Turrit，IM=iMe，NG=Nicegram，LI=Lingogram，RE=Regram。也可以直接填真实 scheme（如 swiftgram）。
-#!system=ios
+﻿#!name=Telegram 澶氬鎴风璺宠浆
+#!desc=鍦ㄦā鍧楀弬鏁伴噷閫夊鎴风锛氱偣 t.me / telegram.me 閾炬帴鏃讹紝璺冲埌浣犻€夌殑 Telegram 瀹㈡埛绔€傚弬鏁扮暀绌烘椂鐢?t.me/__tgclient__ 閫夋嫨椤典繚瀛樼殑鍋忓ソ锛岄粯璁?TG銆?#!arguments=client:SG
+#!arguments-desc=瀹㈡埛绔唬鍙凤細TG=Telegram锛孨A=Nagram锛孲G=Swiftgram锛孴U=Turrit锛孖M=iMe锛孨G=Nicegram锛孡I=Lingogram锛孯E=Regram銆備篃鍙互鐩存帴濉湡瀹?scheme锛堝 swiftgram锛夈€?#!system=ios
 
 [Script]
-telegram-jump = type=http-request,pattern=^https?://(t|telegram)\.me(?:\/|$),script-path=https://raw.githubusercontent.com/BF-157/Surge/main/scripts/telegram-jump.js,argument="{{{client}}}"
+telegram-jump = type=http-request,pattern=^https?://(t|telegram)\.me(?:\/|$),script-path=https://cdn.jsdelivr.net/gh/BF-157/Surge@9e03e99/scripts/telegram-jump.js,argument="{{{client}}}"
 
 [MITM]
 hostname = %APPEND% t.me, telegram.me
